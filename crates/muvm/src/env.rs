@@ -3,6 +3,7 @@ use std::env::{self, VarError};
 use std::fs;
 use std::io::ErrorKind;
 use std::path::Path;
+use std::path::PathBuf;
 
 use anyhow::{Context, Result};
 use log::debug;
