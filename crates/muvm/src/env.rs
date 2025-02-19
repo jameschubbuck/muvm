@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::env::{self, VarError};
-use std::ffi::CString;
 use std::fs;
 use std::io::ErrorKind;
 use std::path::Path;
