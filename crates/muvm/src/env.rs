@@ -11,7 +11,7 @@ use crate::utils::env::find_in_path;
 
 /// Automatically pass these environment variables to the microVM, if they are
 /// set.
-const WELL_KNOWN_ENV_VARS: [&str; 20] = [
+const WELL_KNOWN_ENV_VARS: [&str; 22] = [
     "LANG",
     "LC_ADDRESS",
     "LC_ALL",
