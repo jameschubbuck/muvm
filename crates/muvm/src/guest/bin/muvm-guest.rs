@@ -63,7 +63,7 @@ fn main() -> Result<()> {
         setrlimit(Resource::Nofile, rlim).context("Failed to raise `RLIMIT_NOFILE`")?;
     }
 
-    if let Err(err) = mount_filesystems(options.merged_rootfs) {
+    if let Err(err) = mount_filesystems() {
         return Err(err).context("Failed to mount filesystems, bailing out");
     }
 
