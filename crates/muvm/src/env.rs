@@ -7,7 +7,7 @@ use std::path::Path;
 
 use anyhow::{Context, Result};
 use log::debug;
-use utils::env::find_in_path;
+use crate::utils::env::find_in_path;
 
 /// Automatically pass these environment variables to the microVM, if they are
 /// set.
