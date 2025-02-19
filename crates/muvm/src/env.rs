@@ -11,31 +11,33 @@ use crate::utils::env::find_in_path;
 
 /// Automatically pass these environment variables to the microVM, if they are
 /// set.
-const WELL_KNOWN_ENV_VARS: [&str; 7] = [
+const WELL_KNOWN_ENV_VARS: [&str; 20] = [
+    "LANG",
+    "LC_ADDRESS",
+    "LC_ALL",
+    "LC_COLLATE",
+    "LC_CTYPE",
+    "LC_IDENTIFICATION",
+    "LC_MEASUREMENT",
+    "LC_MESSAGES",
+    "LC_MONETARY",
+    "LC_NAME",
+    "LC_NUMERIC",
+    "LC_PAPER",
+    "LC_TELEPHONE",
+    "LC_TIME",
     "LD_LIBRARY_PATH",
     "LIBGL_DRIVERS_PATH",
     "MESA_LOADER_DRIVER_OVERRIDE", // needed for asahi
-    "PATH",                        // needed by `krun-guest` program
+    "PATH",                        // needed by `muvm-guest` program
     "RUST_LOG",
+    "XMODIFIERS",
     "OPENGL_DRIVER",               // needed for OpenGL on NixOS
     "NIXOS_CURRENT_SYSTEM",        // needed for some paths to work on NixOS
 ];
 
 /// See https://github.com/AsahiLinux/docs/wiki/Devices
-const ASAHI_SOC_COMPAT_IDS: [&str; 12] = [
-    "apple,t8103",
-    "apple,t6000",
-    "apple,t6001",
-    "apple,t6002",
-    "apple,t8112",
-    "apple,t6020",
-    "apple,t6021",
-    "apple,t6022",
-    "apple,t8122",
-    "apple,t6030",
-    "apple,t6031",
-    "apple,t6034",
-];
+const ASAHI_SOC_COMPAT_IDS: [&str; 1] = ["apple,arm-platform"];
 
 pub fn prepare_env_vars(env: Vec<(String, Option<String>)>) -> Result<HashMap<String, String>> {
     let mut env_map = HashMap::new();
@@ -85,24 +87,31 @@ pub fn prepare_env_vars(env: Vec<(String, Option<String>)>) -> Result<HashMap<St
     Ok(env_map)
 }
 
-pub fn find_krun_exec<P>(program: P) -> Result<CString>
+#[cfg(not(debug_assertions))]
+pub fn find_muvm_exec<P>(program: P) -> Result<PathBuf>
 where
     P: AsRef<Path>,
 {
     let program = program.as_ref();
+
     let path = find_in_path(program)
         .with_context(|| format!("Failed to check existence of {program:?}"))?;
-    let path = if let Some(path) = path {
-        path
-    } else {
-        let path = env::current_exe().and_then(|p| p.canonicalize());
-        let path = path.context("Failed to get path of current running executable")?;
-        path.with_file_name(program)
-    };
-    let path = CString::new(path.to_str().with_context(|| {
-        format!("Failed to process {program:?} path as it contains invalid UTF-8")
-    })?)
-    .with_context(|| format!("Failed to process {program:?} path as it contains NUL character"))?;
+    let path = path.with_context(|| format!("Could not find {program:?}"))?;
+
+    Ok(path)
+}
+
+#[cfg(debug_assertions)]
+pub fn find_muvm_exec<P>(program: P) -> Result<PathBuf>
+where
+    P: AsRef<Path>,
+{
+    let program = program.as_ref();
+
+    let path = env::current_exe()
+        .and_then(|p| p.canonicalize())
+        .context("Failed to get path of current running executable")?;
+    let path = path.with_file_name(program);
 
     Ok(path)
 }
